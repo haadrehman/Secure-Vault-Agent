@@ -1,0 +1,36 @@
+rules:
+  - id: unvalidated-file-read
+    patterns:
+      - pattern-either:
+          - pattern: open(...)
+          - pattern: pdfplumber.open(...)
+      - pattern-not-inside: |
+          $PATH = os.path.abspath(...)
+          if $PATH.startswith(...):
+              ...
+    message: "Potential path traversal or unvalidated file read detected. Ensure paths are resolved to absolute paths and checked against the workspace boundary before opening."
+    severity: ERROR
+    languages: [python]
+
+  - id: print-unredacted-pii
+    patterns:
+      - pattern: print($X)
+      - metavariable-regex:
+          metavariable: $X
+          regex: "(?i).*(ssn|credit_card|email|password|token|pii|secret).*"
+    message: "Do not print potentially unredacted sensitive data or PII to the console. Log sanitized data only."
+    severity: ERROR
+    languages: [python]
+
+  - id: hardcoded-api-key
+    patterns:
+      - pattern-either:
+          - pattern: $KEY = "..."
+      - metavariable-regex:
+          metavariable: $KEY
+          regex: "(?i).*(api_key|secret|token|password).*"
+      - pattern-not: $KEY = ""
+      - pattern-not: $KEY = "..."
+    message: "Hardcoded secret detected. Use environment variables (e.g., via `.env`) instead of hardcoding credentials in source code."
+    severity: ERROR
+    languages: [python]
