@@ -9,7 +9,7 @@ authors = [
 
 
 dependencies = [
-    "google-adk[gcp]>=2.0.0,<3.0.0",
+    "google-adk[a2a,gcp]>=2.0.0,<3.0.0",
     "a2a-sdk[http-server]~=0.3.22",
     "nest-asyncio>=1.6.0,<2.0.0",
     "opentelemetry-instrumentation-google-genai>=0.1.0,<1.0.0",

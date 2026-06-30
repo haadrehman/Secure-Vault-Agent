@@ -896,6 +896,9 @@ wheels = [
 ]
 
 [package.optional-dependencies]
+a2a = [
+    { name = "a2a-sdk" },
+]
 eval = [
     { name = "gepa" },
     { name = "google-cloud-aiplatform" },
@@ -3407,7 +3410,7 @@ dependencies = [
     { name = "a2a-sdk", extra = ["http-server"] },
     { name = "chromadb" },
     { name = "gcsfs" },
-    { name = "google-adk", extra = ["gcp"] },
+    { name = "google-adk", extra = ["a2a", "gcp"] },
     { name = "google-cloud-aiplatform" },
     { name = "google-cloud-logging" },
     { name = "mcp" },
@@ -3446,8 +3449,8 @@ requires-dist = [
     { name = "chromadb", specifier = ">=1.5.9" },
     { name = "codespell", marker = "extra == 'lint'", specifier = ">=2.2.0,<3.0.0" },
     { name = "gcsfs", specifier = ">=2024.11.0" },
+    { name = "google-adk", extras = ["a2a", "gcp"], specifier = ">=2.0.0,<3.0.0" },
     { name = "google-adk", extras = ["eval"], marker = "extra == 'eval'", specifier = ">=2.0.0,<3.0.0" },
-    { name = "google-adk", extras = ["gcp"], specifier = ">=2.0.0,<3.0.0" },
     { name = "google-cloud-aiplatform", extras = ["evaluation"], marker = "extra == 'eval'", specifier = ">=1.149.0" },
     { name = "google-cloud-aiplatform", extras = ["evaluation", "agent-engines"], specifier = ">=1.149.0" },
     { name = "google-cloud-logging", specifier = ">=3.12.0,<4.0.0" },

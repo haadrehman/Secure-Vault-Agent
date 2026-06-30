@@ -78,18 +78,22 @@ async def handle_call_tool(
         if not os.path.exists(abs_path):
             raise ValueError(f"File not found: {abs_path}")
             
-        try:
-            # Simple text parsing for now. pypdf could be used for PDFs.
-            with open(abs_path, 'r', encoding='utf-8') as f: # nosemgrep: unvalidated-file-read
-                content = f.read()
-                
-            chunks = chunk_text(content)
-            filename = os.path.basename(abs_path)
-            doc_id = str(uuid.uuid4())
-            db.add_document_chunks(doc_id=doc_id, chunks=chunks, metadata={"filename": filename})
-            return [types.TextContent(type="text", text=f"Successfully ingested {filename} into {len(chunks)} chunks.")]
-        except Exception as e:
-            raise ValueError(f"Failed to ingest document: {str(e)}")
+        from src.core.telemetry import get_tracer
+        tracer = get_tracer()
+        with tracer.start_as_current_span("ingest_doc") as span:
+            try:
+                # Simple text parsing for now. pypdf could be used for PDFs.
+                with open(abs_path, 'r', encoding='utf-8') as f: # nosemgrep: unvalidated-file-read
+                    content = f.read()
+                    
+                chunks = chunk_text(content)
+                span.set_attribute("chunk_count", len(chunks))
+                filename = os.path.basename(abs_path)
+                doc_id = str(uuid.uuid4())
+                db.add_document_chunks(doc_id=doc_id, chunks=chunks, metadata={"filename": filename})
+                return [types.TextContent(type="text", text=f"Successfully ingested {filename} into {len(chunks)} chunks.")]
+            except Exception as e:
+                raise ValueError(f"Failed to ingest document: {str(e)}")
             
     elif name == "search_vault":
         query = arguments.get("query")
@@ -105,7 +109,13 @@ async def handle_call_tool(
         # Redact locally
         redacted_text, token_map = redactor.redact_text(combined_text)
         
-        return [types.TextContent(type="text", text=redacted_text)]
+        import json
+        result_json = json.dumps({
+            "redacted_text": redacted_text,
+            "token_map": token_map
+        })
+        
+        return [types.TextContent(type="text", text=result_json)]
         
     elif name == "list_vault_documents":
         names = db.get_document_names()

@@ -20,46 +20,41 @@ class PIIRedactor:
             anonymized_text: str (e.g., "The client [PERSON_1] owes [MONEY_1]")
             token_map: dict (e.g., {"[PERSON_1]": "John Doe", "[MONEY_1]": "$5,000"})
         """
-        # Analyze the text
-        results = self.analyzer.analyze(text=text, entities=self.entities, language="en")
-        
-        # Sort results descending by start index to avoid index shifting when replacing
-        results = sorted(results, key=lambda x: x.start, reverse=True)
-        
-        counters = collections.defaultdict(int)
-        token_map = {}
-        anonymized_text = text
-        
-        for result in results:
-            entity_type = result.entity_type
-            original_value = text[result.start:result.end]
+        from src.core.telemetry import get_tracer
+        tracer = get_tracer()
+        with tracer.start_as_current_span("local_redact") as span:
+            # Analyze the text
+            results = self.analyzer.analyze(text=text, entities=self.entities, language="en")
             
-            # Create sequential token like [PERSON_1]
-            # Since we iterate backwards, we might want to count differently or just let it be backwards.
-            # But normally we'd want PERSON_1 to be the first one in the text.
-            # Let's count them normally by processing forwards first to assign tokens, then replace backwards.
-            pass
+            # Sort results descending by start index to avoid index shifting when replacing
+            results = sorted(results, key=lambda x: x.start, reverse=True)
             
-        # Refined token assignment (forward pass)
-        results_forward = sorted(results, key=lambda x: x.start)
-        entity_to_token = {} # maps specific result object (by id/ref) to token
-        
-        for result in results_forward:
-            entity_type = result.entity_type
-            counters[entity_type] += 1
-            token_name = f"[{entity_type}_{counters[entity_type]}]"
-            # We use (result.start, result.end, result.entity_type) as a unique key for this match
-            entity_to_token[(result.start, result.end, result.entity_type)] = token_name
+            counters = collections.defaultdict(int)
+            token_map = {}
+            anonymized_text = text
             
-            original_value = text[result.start:result.end]
-            token_map[token_name] = original_value
+            # Refined token assignment (forward pass)
+            results_forward = sorted(results, key=lambda x: x.start)
+            entity_to_token = {} # maps specific result object (by id/ref) to token
             
-        # Backward replacement pass
-        for result in results:
-            token_name = entity_to_token[(result.start, result.end, result.entity_type)]
-            anonymized_text = anonymized_text[:result.start] + token_name + anonymized_text[result.end:]
+            for result in results_forward:
+                entity_type = result.entity_type
+                counters[entity_type] += 1
+                token_name = f"[{entity_type}_{counters[entity_type]}]"
+                # We use (result.start, result.end, result.entity_type) as a unique key for this match
+                entity_to_token[(result.start, result.end, result.entity_type)] = token_name
+                
+                original_value = text[result.start:result.end]
+                token_map[token_name] = original_value
+                
+            # Backward replacement pass
+            for result in results:
+                token_name = entity_to_token[(result.start, result.end, result.entity_type)]
+                anonymized_text = anonymized_text[:result.start] + token_name + anonymized_text[result.end:]
+                
+            span.set_attribute("redacted_entity_count", len(token_map))
             
-        return anonymized_text, token_map
+            return anonymized_text, token_map
 
     def restore_text(self, redacted_text: str, token_map: dict) -> str:
         """ Replaces placeholder tokens back with real data from the map. """
