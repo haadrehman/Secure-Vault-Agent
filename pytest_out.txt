@@ -1,0 +1,8 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.12, pytest-9.0.3, pluggy-1.6.0 -- /Users/m.haadrehman/Documents/Security-Vault-Agent/secure-vault-agent/.venv/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/m.haadrehman/Documents/Security-Vault-Agent/secure-vault-agent
+configfile: pyproject.toml
+plugins: asyncio-1.4.0, anyio-4.13.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collecting ... 

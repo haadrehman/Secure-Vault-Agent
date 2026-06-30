@@ -1,95 +1,44 @@
-# secure-vault-agent
+# Sovereign Vault - Secure AI Concierge Agent
 
-ReAct agent with A2A protocol [experimental]
-Agent generated with `agents-cli` version `0.5.1`
+Sovereign Vault is a privacy-first Concierge Agent designed to help users interact with their highly sensitive personal documents (tax forms, medical records, legal contracts) without leaking Personally Identifiable Information (PII) to cloud AI models. By implementing a strict local boundary using local ChromaDB and Presidio-based tokenization, the agent seamlessly intercepts, redacts, and restores PII locally. The LLM processes queries securely using surrogate tokens (e.g., `[PERSON_1]`), ensuring maximum data privacy.
 
-## Project Structure
+## Architecture Overview
 
-```
-secure-vault-agent/
-├── app/         # Core agent code
-│   ├── agent.py               # Main agent logic
-│   ├── agent_runtime_app.py    # Agent Runtime application logic
-│   └── app_utils/             # App utilities and helpers
-├── tests/                     # Unit, integration, and load tests
-├── GEMINI.md                  # AI-assisted development guide
-└── pyproject.toml             # Project dependencies
-```
+The system runs on the **Google ADK 2.0 (a2a)** framework and employs a strict triad of specialized agents:
+- **OrchestratorAgent**: The entry coordinator running in an Agent-as-a-Tool pattern. It routes queries dynamically and maintains full conversational context.
+- **IngestionAgent**: A strict, sandboxed agent that validates file paths and ingests local documents securely into a local vector database.
+- **QueryAgent**: Responsible for answering user questions. It performs semantic search locally and ensures all PII is redacted before the prompt hits the cloud.
 
-> 💡 **Tip:** Use [Gemini CLI](https://github.com/google-gemini/gemini-cli) for AI-assisted development - project context is pre-configured in `GEMINI.md`.
+The agents interface with local capabilities via a custom **Model Context Protocol (MCP)** Server (`src/mcp/server.py`). The MCP server exposes tools like `ingest_document` and `search_vault`, strictly isolating data parsing and vector database (ChromaDB) access from the LLM logic.
 
-## Requirements
+## Setup Instructions
 
-Before you begin, ensure you have:
-- **uv**: Python package manager (used for all dependency management in this project) - [Install](https://docs.astral.sh/uv/getting-started/installation/) ([add packages](https://docs.astral.sh/uv/concepts/dependencies/) with `uv add <package>`)
-- **agents-cli**: Agents CLI - Install with `uv tool install google-agents-cli`
-- **Google Cloud SDK**: For GCP services - [Install](https://cloud.google.com/sdk/docs/install)
+1. **Python Environment**: Ensure you are using Python 3.12+.
+2. **Install Dependencies**: We use `uv` for lightning-fast package management.
+   ```bash
+   uv pip install "google-adk[a2a]" chromadb presidio-analyzer pydantic pytest
+   ```
+3. **Environment Variables**: Create a `.env` file in the root directory and add your API keys. **Note: No API keys or secrets are committed to this repository.** The `.env` file is explicitly ignored in `.gitignore`.
+   ```bash
+   GEMINI_API_KEY="your_api_key_here"
+   ```
+4. **Run the Project**: The verified, direct launch command for our specialized agent runner is:
+   ```bash
+   uv run python src/main.py
+   ```
 
+## Testing
 
-## Quick Start
-
-Install `agents-cli` and its skills if not already installed:
-
+To run the full Red/Blue/Green security test suite:
 ```bash
-uvx google-agents-cli setup
+uv run pytest tests/
 ```
 
-Install required packages:
+## Security Design
 
-```bash
-agents-cli install
-```
-
-Test the agent with a local web server:
-
-```bash
-agents-cli playground
-```
-
-You can also use features from the [ADK](https://adk.dev/) CLI with `uv run adk`.
-
-## Commands
-
-| Command              | Description                                                                                 |
-| -------------------- | ------------------------------------------------------------------------------------------- |
-| `agents-cli install` | Install dependencies using uv                                                         |
-| `agents-cli playground` | Launch local development environment                                                  |
-| `agents-cli lint`    | Run code quality checks                                                               |
-| `agents-cli eval`    | Evaluate agent behavior (generate, grade, analyze, and more — see `agents-cli eval --help`) |
-| `uv run pytest tests/unit tests/integration` | Run unit and integration tests                                                        |
-| `agents-cli deploy`  | Deploy agent to Agent Runtime                                                                |
-| `agents-cli publish gemini-enterprise` | Register deployed agent to Gemini Enterprise                    |
-| [A2A Inspector](https://github.com/a2aproject/a2a-inspector) | Launch A2A Protocol Inspector                                                        |
-
-## 🛠️ Project Management
-
-| Command | What It Does |
-|---------|--------------|
-| `agents-cli scaffold enhance` | Add CI/CD pipelines and Terraform infrastructure |
-| `agents-cli infra cicd` | One-command setup of entire CI/CD pipeline + infrastructure |
-| `agents-cli scaffold upgrade` | Auto-upgrade to latest version while preserving customizations |
-
----
-
-## Development
-
-Edit your agent logic in `app/agent.py` and test with `agents-cli playground` - it auto-reloads on save.
-
-## Deployment
-
-```bash
-gcloud config set project <your-project-id>
-agents-cli deploy
-```
-
-To add CI/CD and Terraform, run `agents-cli scaffold enhance`.
-To set up your production infrastructure, run `agents-cli infra cicd`.
-
-## Observability
-
-Built-in telemetry exports to Cloud Trace, BigQuery, and Cloud Logging.
-
-## A2A Inspector
-
-This agent supports the [A2A Protocol](https://a2a-protocol.org/). Use the [A2A Inspector](https://github.com/a2aproject/a2a-inspector) to test interoperability.
-See the [A2A Inspector docs](https://github.com/a2aproject/a2a-inspector) for details.
+This project strictly adheres to Day 4's Red/Blue/Green triad security guidelines for AI agents:
+- **Local-Only PII Redaction**: Microsoft Presidio runs locally within the MCP server boundary, ensuring PII is stripped out *before* the data payload leaves your machine.
+- **Zero-Leakage Boundary**: The `QueryAgent` is restricted to using bracketed placeholder tokens (e.g., `[US_SSN_1]`). The token mapping never enters the LLM's context window.
+- **Human-in-the-Loop (HITL) Gate**: All redactions require manual confirmation. A `LongRunningFunctionTool` pauses execution, displaying the raw vs. redacted payload for explicit human approval before the LLM can generate a response.
+- **Path Traversal Guards**: The MCP server strictly validates that any ingested document path resolves within the explicit `WORKSPACE_DIR`. Any attempt to access `/etc/passwd` or outside folders is blocked.
+- **Fallback Resilience**: A local `ollama` model (`gemma2:2b`) is configured to seamlessly take over if cloud inference fails or rate limits are reached, emitting OpenTelemetry telemetry warnings.
