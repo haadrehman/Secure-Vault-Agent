@@ -9,7 +9,7 @@ The system runs on the **Google ADK 2.0 (a2a)** framework and employs a strict t
 - **IngestionAgent**: A strict, sandboxed agent that validates file paths and ingests local documents securely into a local vector database.
 - **QueryAgent**: Responsible for answering user questions. It performs semantic search locally and ensures all PII is redacted before the prompt hits the cloud.
 
-The agents interface with local capabilities via a custom **Model Context Protocol (MCP)** Server (`src/mcp/server.py`). The MCP server exposes tools like `ingest_document` and `search_vault`, strictly isolating data parsing and vector database (ChromaDB) access from the LLM logic.
+The agents interface with local capabilities via a custom **Model Context Protocol (MCP)** Server (`src.mcp_server/server.py`). The MCP server exposes tools like `ingest_document` and `search_vault`, strictly isolating data parsing and vector database (ChromaDB) access from the LLM logic.
 
 ## Setup Instructions
 
