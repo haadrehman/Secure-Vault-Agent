@@ -44,8 +44,9 @@ async def main():
                 try:
                     # Run the agent
                     async for event in runner.run_async(
-                        prompt=user_input,
-                        user_id=user_id
+                        new_message=user_input,
+                        user_id=user_id,
+                        session_id="local_session"
                     ):
                         if event.text:
                             print(f"\nVault> {event.text}")
@@ -77,6 +78,9 @@ async def main():
                                 with tracer.start_as_current_span("hitl_wait_latency") as hitl_span:
                                     approval = input("Approve redaction? (y/n): ")
                                     
+                                    # Fetch invocation_id from event for resuming
+                                    invoc_id = getattr(event, "invocation_id", getattr(event, "id", None))
+                                    
                                     if approval.lower() == 'y':
                                         print("Approval granted. Resuming...")
                                         resume_response = FunctionResponse(
@@ -86,8 +90,10 @@ async def main():
                                         )
                                         # Resume the runner
                                         async for resume_event in runner.run_async(
-                                            resume_inputs=[resume_response],
-                                            user_id=user_id
+                                            new_message=[resume_response],
+                                            user_id=user_id,
+                                            session_id="local_session",
+                                            invocation_id=invoc_id
                                         ):
                                             if resume_event.text:
                                                 print(f"Vault> {resume_event.text}")
@@ -99,8 +105,10 @@ async def main():
                                             response={"status": "denied"}
                                         )
                                         async for resume_event in runner.run_async(
-                                            resume_inputs=[resume_response],
-                                            user_id=user_id
+                                            new_message=[resume_response],
+                                            user_id=user_id,
+                                            session_id="local_session",
+                                            invocation_id=invoc_id
                                         ):
                                             if resume_event.text:
                                                 print(f"Vault> {resume_event.text}")
@@ -123,7 +131,11 @@ async def main():
                         instruction="You are a fallback responder. Provide a concise, helpful answer to the user."
                     )
                     fallback_runner = InMemoryRunner(agent=fallback_agent, app_name="app")
-                    async for fb_event in fallback_runner.run_async(prompt=user_input, user_id=user_id):
+                    async for fb_event in fallback_runner.run_async(
+                        new_message=user_input, 
+                        user_id=user_id,
+                        session_id="local_session"
+                    ):
                         if fb_event.text:
                             print(f"\nVault (Fallback)> {fb_event.text}")
                             
