@@ -11,7 +11,7 @@ from google.adk.runners import InMemoryRunner
 from google.adk.sessions import InMemorySessionService
 from google.adk.apps import App, ResumabilityConfig
 from google.adk.models.lite_llm import LiteLlm
-from google.genai.types import FunctionResponse
+from google.genai.types import FunctionResponse, Content, Part
 
 from app.agent import root_agent
 from src.core.telemetry import get_tracer
@@ -32,6 +32,11 @@ async def main():
     
     user_id = "local_user"
     
+    # Initialize session
+    await runner.session_service.create_session(
+        app_name="app", user_id=user_id, session_id="local_session"
+    )
+    
     while True:
         try:
             user_input = input("User> ")
@@ -44,7 +49,7 @@ async def main():
                 try:
                     # Run the agent
                     async for event in runner.run_async(
-                        new_message=user_input,
+                        new_message=Content(role="user", parts=[Part.from_text(text=user_input)]),
                         user_id=user_id,
                         session_id="local_session"
                     ):
@@ -90,7 +95,7 @@ async def main():
                                         )
                                         # Resume the runner
                                         async for resume_event in runner.run_async(
-                                            new_message=[resume_response],
+                                            new_message=Content(role="user", parts=[Part(function_response=resume_response)]),
                                             user_id=user_id,
                                             session_id="local_session",
                                             invocation_id=invoc_id
@@ -105,7 +110,7 @@ async def main():
                                             response={"status": "denied"}
                                         )
                                         async for resume_event in runner.run_async(
-                                            new_message=[resume_response],
+                                            new_message=Content(role="user", parts=[Part(function_response=resume_response)]),
                                             user_id=user_id,
                                             session_id="local_session",
                                             invocation_id=invoc_id
@@ -131,8 +136,11 @@ async def main():
                         instruction="You are a fallback responder. Provide a concise, helpful answer to the user."
                     )
                     fallback_runner = InMemoryRunner(agent=fallback_agent, app_name="app")
+                    await fallback_runner.session_service.create_session(
+                        app_name="app", user_id=user_id, session_id="local_session"
+                    )
                     async for fb_event in fallback_runner.run_async(
-                        new_message=user_input, 
+                        new_message=Content(role="user", parts=[Part.from_text(text=user_input)]), 
                         user_id=user_id,
                         session_id="local_session"
                     ):
