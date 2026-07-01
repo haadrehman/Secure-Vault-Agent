@@ -1,3 +1,10 @@
+import warnings
+warnings.filterwarnings(
+    "ignore",
+    message=".*EXPERIMENTAL.*",
+    category=UserWarning
+)
+
 import asyncio
 import httpx
 import sys
