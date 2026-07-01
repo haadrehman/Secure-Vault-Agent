@@ -4,6 +4,8 @@ from google.adk.agents import Agent
 # It will be wrapped in an AgentTool inside the Orchestrator 
 # to ensure the Orchestrator retains conversation control instead of doing a sub-agent transfer.
 
+from src.mcp_client import get_mcp_toolset
+
 ingestion_agent = Agent(
     name="ingestion_agent",
     model="gemini-flash-latest",
@@ -13,4 +15,5 @@ Your exclusive focus is on folder parsing, validation, and invoking the local `i
 - Validate that the file path is absolute and within the workspace boundary before processing.
 - Do not attempt to read files from /tmp, /etc, or outside the designated project folder.
 - Execute the ingestion pipeline safely without leaking raw data.""",
+    tools=[get_mcp_toolset(tool_filter=["ingest_document", "list_vault_documents"])]
 )

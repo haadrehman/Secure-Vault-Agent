@@ -11,11 +11,22 @@ from src.core.database import VaultDatabase
 # The MCP server requires an async environment
 mcp_server = Server("sovereign-vault-mcp")
 
-WORKSPACE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+WORKSPACE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 
-# Initialize engines
-db = VaultDatabase(workspace_dir=WORKSPACE_DIR)
-redactor = PIIRedactor()
+# Initialize engines lazily to prevent SQLite lock contention when multiple MCP subprocesses boot
+db_instance = None
+def get_db():
+    global db_instance
+    if db_instance is None:
+        db_instance = VaultDatabase(workspace_dir=WORKSPACE_DIR)
+    return db_instance
+
+redactor_instance = None
+def get_redactor():
+    global redactor_instance
+    if redactor_instance is None:
+        redactor_instance = PIIRedactor()
+    return redactor_instance
 
 def chunk_text(text: str, chunk_size=500, overlap=100) -> list[str]:
     chunks = []
@@ -82,16 +93,48 @@ async def handle_call_tool(
         tracer = get_tracer()
         with tracer.start_as_current_span("ingest_doc") as span:
             try:
-                # Simple text parsing for now. pypdf could be used for PDFs.
-                with open(abs_path, 'r', encoding='utf-8') as f: # nosemgrep: unvalidated-file-read
-                    content = f.read()
-                    
-                chunks = chunk_text(content)
-                span.set_attribute("chunk_count", len(chunks))
-                filename = os.path.basename(abs_path)
-                doc_id = str(uuid.uuid4())
-                db.add_document_chunks(doc_id=doc_id, chunks=chunks, metadata={"filename": filename})
-                return [types.TextContent(type="text", text=f"Successfully ingested {filename} into {len(chunks)} chunks.")]
+                if os.path.isdir(abs_path):
+                    files_processed = 0
+                    total_chunks = 0
+                    for root, _, files in os.walk(abs_path):
+                        for file in files:
+                            # Skip hidden files
+                            if file.startswith('.'):
+                                continue
+                            file_path = os.path.join(root, file)
+                            try:
+                                with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:  # nosemgrep: unvalidated-file-read
+                                    content = f.read()
+                                chunks = chunk_text(content)
+                                doc_id = str(uuid.uuid4())
+                                # Idempotent ingestion: delete existing chunks for this filename first
+                                try:
+                                    get_db().collection.delete(where={"filename": file})
+                                except Exception:
+                                    pass
+                                get_db().add_document_chunks(doc_id=doc_id, chunks=chunks, metadata={"filename": file})
+                                files_processed += 1
+                                total_chunks += len(chunks)
+                            except Exception:
+                                pass
+                    span.set_attribute("files_processed", files_processed)
+                    return [types.TextContent(type="text", text=f"Successfully ingested {files_processed} files into {total_chunks} chunks from directory.")]
+                else:
+                    # Simple text parsing for now. pypdf could be used for PDFs.
+                    with open(abs_path, 'r', encoding='utf-8') as f: # nosemgrep: unvalidated-file-read
+                        content = f.read()
+                        
+                    chunks = chunk_text(content)
+                    span.set_attribute("chunk_count", len(chunks))
+                    filename = os.path.basename(abs_path)
+                    doc_id = str(uuid.uuid4())
+                    # Idempotent ingestion: delete existing chunks for this filename first
+                    try:
+                        get_db().collection.delete(where={"filename": filename})
+                    except Exception:
+                        pass
+                    get_db().add_document_chunks(doc_id=doc_id, chunks=chunks, metadata={"filename": filename})
+                    return [types.TextContent(type="text", text=f"Successfully ingested {filename} into {len(chunks)} chunks.")]
             except Exception as e:
                 raise ValueError(f"Failed to ingest document: {str(e)}")
             
@@ -100,14 +143,14 @@ async def handle_call_tool(
         if not query:
             raise ValueError("Query argument is required")
             
-        results = db.query_documents(query)
+        results = get_db().query_documents(query)
         if not results:
             return [types.TextContent(type="text", text="No relevant documents found.")]
             
         combined_text = "\n\n".join(results)
         
         # Redact locally
-        redacted_text, token_map = redactor.redact_text(combined_text)
+        redacted_text, token_map = get_redactor().redact_text(combined_text)
         
         import json
         result_json = json.dumps({
@@ -118,7 +161,7 @@ async def handle_call_tool(
         return [types.TextContent(type="text", text=result_json)]
         
     elif name == "list_vault_documents":
-        names = db.get_document_names()
+        names = get_db().get_document_names()
         return [types.TextContent(type="text", text=", ".join(names) if names else "No documents found.")]
         
     else:

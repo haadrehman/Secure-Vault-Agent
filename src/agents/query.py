@@ -28,6 +28,7 @@ async def extract_token_map(tool: BaseTool, args: dict, tool_context: ToolContex
 # so that the raw bracketed output is passed back to the Orchestrator for de-anonymization.
 
 from src.core.safety import hitl_tool
+from src.mcp_client import get_mcp_toolset
 
 query_agent = Agent(
     name="query_agent",
@@ -41,5 +42,5 @@ Your focus is executing semantic searches and formulating answers based on retri
 - Respect the local boundary rule (redact_doc skill): never bypass or attempt to reverse redaction placeholders (e.g., [PERSON_1]).
 - Keep the bracketed tokens exactly as provided so the orchestrator can de-anonymize them later.""",
     after_tool_callback=extract_token_map,
-    tools=[hitl_tool]
+    tools=[hitl_tool, get_mcp_toolset(tool_filter=["search_vault"])]
 )

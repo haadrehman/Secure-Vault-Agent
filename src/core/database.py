@@ -58,8 +58,13 @@ class VaultDatabase:
         metadatas = [metadata for _ in chunks]
         self.collection.add(documents=chunks, ids=ids, metadatas=metadatas)
         
-    def query_documents(self, query: str, n_results: int = 5) -> list[str]:
-        results = self.collection.query(query_texts=[query], n_results=n_results)
+    def query_documents(self, query: str, n_results: int = 3) -> list[str]:
+        # Guard: never request more results than documents stored
+        stored_count = self.collection.count()
+        if stored_count == 0:
+            return []
+        safe_n = min(n_results, stored_count)
+        results = self.collection.query(query_texts=[query], n_results=safe_n)
         if results['documents'] and len(results['documents']) > 0:
             return results['documents'][0]
         return []

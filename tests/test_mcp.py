@@ -16,10 +16,14 @@ async def test_list_tools():
     assert "list_vault_documents" in tool_names
 
 @pytest.mark.asyncio
-@patch('src.mcp_server.server.db')
+@patch('src.mcp_server.server.get_db')
 @patch('builtins.open', new_callable=mock_open, read_data="Mock document content for testing ingestion.")
 @patch('os.path.exists', return_value=True)
-async def test_ingest_document(mock_exists, mock_file, mock_db):
+async def test_ingest_document(mock_exists, mock_file, mock_get_db):
+    # Setup mock collection and database
+    mock_db = MagicMock()
+    mock_get_db.return_value = mock_db
+    
     # Test successful ingestion
     valid_path = os.path.join(WORKSPACE_DIR, "test_doc.txt")
     result = await handle_call_tool("ingest_document", {"path": valid_path})
@@ -29,10 +33,15 @@ async def test_ingest_document(mock_exists, mock_file, mock_db):
     mock_db.add_document_chunks.assert_called_once()
 
 @pytest.mark.asyncio
-@patch('src.mcp_server.server.db')
-@patch('src.mcp_server.server.redactor')
-async def test_search_vault(mock_redactor, mock_db):
+@patch('src.mcp_server.server.get_db')
+@patch('src.mcp_server.server.get_redactor')
+async def test_search_vault(mock_get_redactor, mock_get_db):
     # Setup mocks
+    mock_db = MagicMock()
+    mock_redactor = MagicMock()
+    mock_get_db.return_value = mock_db
+    mock_get_redactor.return_value = mock_redactor
+    
     mock_db.query_documents.return_value = ["Mock chunk with John Doe inside."]
     mock_redactor.redact_text.return_value = ("Mock chunk with [PERSON_1] inside.", {"[PERSON_1]": "John Doe"})
     
@@ -46,8 +55,10 @@ async def test_search_vault(mock_redactor, mock_db):
     mock_db.query_documents.assert_called_once_with("Who is John?")
 
 @pytest.mark.asyncio
-@patch('src.mcp_server.server.db')
-async def test_list_vault_documents(mock_db):
+@patch('src.mcp_server.server.get_db')
+async def test_list_vault_documents(mock_get_db):
+    mock_db = MagicMock()
+    mock_get_db.return_value = mock_db
     mock_db.get_document_names.return_value = ["doc1.txt", "doc2.txt"]
     
     result = await handle_call_tool("list_vault_documents", {})
