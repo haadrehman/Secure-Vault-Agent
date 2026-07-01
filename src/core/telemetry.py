@@ -2,10 +2,14 @@ from opentelemetry import trace
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import SimpleSpanProcessor, ConsoleSpanExporter
 
+import os
+
 # Initialize OpenTelemetry with a console span exporter for trajectory tracking
 provider = TracerProvider()
-processor = SimpleSpanProcessor(ConsoleSpanExporter())
-provider.add_span_processor(processor)
+
+if os.environ.get("DEBUG_TELEMETRY") == "1":
+    processor = SimpleSpanProcessor(ConsoleSpanExporter())
+    provider.add_span_processor(processor)
 
 # Set the global tracer provider
 trace.set_tracer_provider(provider)

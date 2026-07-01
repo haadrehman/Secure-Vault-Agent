@@ -1,0 +1,480 @@
+/Users/m.haadrehman/Documents/Security-Vault-Agent/secure-vault-agent/src/main.py:26: UserWarning: [EXPERIMENTAL] ResumabilityConfig: This feature is experimental and may change or be removed in future versions without notice. It may introduce breaking changes at any time.
+  resumability_config=ResumabilityConfig(is_resumable=True)
+Welcome to the Sovereign Vault Agent CLI.
+Type your query or 'exit' to quit.
+
+User> /Users/m.haadrehman/Documents/Security-Vault-Agent/secure-vault-agent/.venv/lib/python3.12/site-packages/google/adk/models/llm_request.py:256: UserWarning: [EXPERIMENTAL] feature FeatureName.JSON_SCHEMA_FOR_FUNC_DECL is enabled.
+  declaration = tool._get_declaration()
+{
+    "name": "generate_content gemini-flash-latest",
+    "context": {
+        "trace_id": "0x4b98f87e3a072e68781b86b61e82b762",
+        "span_id": "0xffdc2f62dd7376f1",
+        "trace_state": "[]"
+    },
+    "kind": "SpanKind.INTERNAL",
+    "parent_id": "0x7807af01914044d1",
+    "start_time": "2026-07-01T09:32:27.902887Z",
+    "end_time": "2026-07-01T09:32:34.173754Z",
+    "status": {
+        "status_code": "UNSET"
+    },
+    "attributes": {
+        "gen_ai.system": "gemini",
+        "gen_ai.operation.name": "generate_content",
+        "gen_ai.request.model": "gemini-flash-latest",
+        "gen_ai.agent.name": "ingestion_agent",
+        "gen_ai.conversation.id": "e72e246a-8ebb-4921-ac81-c2f0ee28b5b7",
+        "gcp.vertex.agent.event_id": "f5d03a21-96b7-4095-9083-a69f65fcd015",
+        "gcp.vertex.agent.invocation_id": "e-bcafbe2e-d71d-46ca-912b-d66c7c100615",
+        "gen_ai.response.finish_reasons": [
+            "stop"
+        ],
+        "gen_ai.usage.input_tokens": 158,
+        "gen_ai.usage.output_tokens": 407
+    },
+    "events": [],
+    "links": [],
+    "resource": {
+        "attributes": {
+            "telemetry.sdk.language": "python",
+            "telemetry.sdk.name": "opentelemetry",
+            "telemetry.sdk.version": "1.41.1",
+            "service.name": "unknown_service"
+        },
+        "schema_url": ""
+    }
+}
+{
+    "name": "call_llm",
+    "context": {
+        "trace_id": "0x4b98f87e3a072e68781b86b61e82b762",
+        "span_id": "0x7807af01914044d1",
+        "trace_state": "[]"
+    },
+    "kind": "SpanKind.INTERNAL",
+    "parent_id": "0x7c00bc14425408cd",
+    "start_time": "2026-07-01T09:32:27.902814Z",
+    "end_time": "2026-07-01T09:32:34.177007Z",
+    "status": {
+        "status_code": "UNSET"
+    },
+    "attributes": {
+        "gen_ai.system": "gcp.vertex.agent",
+        "gen_ai.request.model": "gemini-flash-latest",
+        "gcp.vertex.agent.invocation_id": "e-bcafbe2e-d71d-46ca-912b-d66c7c100615",
+        "gcp.vertex.agent.session_id": "e72e246a-8ebb-4921-ac81-c2f0ee28b5b7",
+        "gcp.vertex.agent.event_id": "f5d03a21-96b7-4095-9083-a69f65fcd015",
+        "gcp.vertex.agent.llm_request": "{\"model\": \"gemini-flash-latest\", \"config\": {\"http_options\": {\"headers\": {\"x-goog-api-client\": \"google-adk/2.1.0 gl-python/3.12.12\", \"user-agent\": \"google-adk/2.1.0 gl-python/3.12.12\"}}, \"system_instruction\": \"You are the Sovereign Vault Ingestion Agent.\\nYour exclusive focus is on folder parsing, validation, and invoking the local `ingest_document` MCP tool (bound via the ingest_doc skill).\\n- Validate that the file path is absolute and within the workspace boundary before processing.\\n- Do not attempt to read files from /tmp, /etc, or outside the designated project folder.\\n- Execute the ingestion pipeline safely without leaking raw data.\\n\\nYou are an agent. Your internal name is \\\"ingestion_agent\\\". The description about you is \\\"Handles ingesting new documents into the vault: validates file paths, chunks text, and stores embeddings. Use for requests about adding, scanning, or processing new files.\\\".\"}, \"contents\": [{\"parts\": [{\"text\": \"how do I give you the documents to query\"}], \"role\": \"user\"}]}",
+        "gcp.vertex.agent.llm_response": "{\"model_version\":\"gemini-3.5-flash\",\"content\":{\"parts\":[{\"text\":\"To add documents to the Sovereign Vault so they can be queried, you can provide me with the **absolute file path** to the documents or folders on your system. \\n\\nHere is how you can do it:\\n\\n### 1. Provide an Absolute File Path\\nYou can give me the full, absolute path to a specific file you want to ingest. \\n* *Example (Mac/Linux):* `/Users/yourusername/workspace/project/document.pdf`\\n* *Example (Windows):* `C:\\\\Users\\\\yourusername\\\\workspace\\\\project\\\\document.txt`\\n\\n### 2. Provide a Folder Path (Bulk Ingestion)\\nIf you have multiple files, you can point me to an entire directory, and I will scan and process the eligible files within it.\\n* *Example:* `/Users/yourusername/workspace/project/docs_to_ingest/`\\n\\n---\\n\\n### Important Security & Formatting Guidelines:\\n* **Absolute Paths Only:** Please provide the full path rather than relative paths (like `./document.txt` or `../docs`).\\n* **Workspace Boundaries:** For security reasons, the files must reside within your designated workspace folder. I cannot access system directories (such as `/tmp`, `/etc`, or directories outside your allowed project environment).\\n* **File Types:** I can process standard text files, Markdown (`.md`), PDFs, and other common document formats.\\n\\n### What happens next?\\nOnce you provide a valid path:\\n1. I will **validate** the path to ensure it is secure and within your workspace.\\n2. I will **parse** the document(s).\\n3. I will **chunk** the text and generate secure vector embeddings.\\n4. I will **store** them in your Sovereign Vault. \\n\\nOnce ingested, the documents will be fully indexed and ready for you to query! **Please paste the absolute path to the file or folder you would like to ingest to get started.**\",\"thought_signature\":\"Ev0UCvoUAQw51sfOpHAkY684fDq94O17WvzMJRnH1dRPbNzkXgn05rlm2TpbYQ4w9pFRX-te1GIgdtpE7BjY71HPTrpPiGjqZrtX0LUyYMGIwryb77ZuqZHKNasvvQ8ldiH9fGCa43c2sZoHt8h0DOljhDSX5gdyiiTXwqBiSXFLeSN4LcHx1z490fEdQ2-YuoIw0OayxE3fJ9iFl9OoNWs_fM_CgKZM-Uls6zYLpX--_Dfj1t6drjx1LGiz4iU5Tbwe01OEP3TiT_YFdE7UjabyCyGEVmfKqRk8I4Jf1ZyZAARBfoTAPTDEJwaSOM2zJGuAMjswpBHPHoeBLea1Tn_lZL34yror3ZPfq5T_Ob2xB316MnxRLyEKHxz-jJleq_5dNRnCz5n9fVm1fmC8EnJ4-OWObVB1xwV4viajKzUWbRtbHByfinh24wpUlB0VS4k_PF-9F4QeXUcG0PLEDZc0cmhG8Q2uFzLw-hS7cpjItac9FrGjLw8yvkbTcnZQ7tWom3gpidoxv148OriyFq39vulpTpzj25SN-bUZqCdzfujnDT_zc6HILvMY5LRIaHdMmCtHPYc-TqfxpITG6NvLgBkbZ7lppEKgCQTY4aPKFCNnEWLGXS0spnzVS7oN9FiyNTLjHMeOIqgZ4_O9d5zW02-81-Ym3vx-NRzPiYclVtGDXNVzLMiYPpXF5WSJZ7BCinqFDMPYlio5LDNqx-lgvsu9bv_K7uutxyFkVruADBxutO8oKJon6nXYazHpbaehFG5aaYIaXqa71qDVADWaXL1Qd50pK0Mdeocp4B9Ntvm1FtfhW2XqdtojAex6oHF-ahiRk_BlJT63JDPDvF6OVv4f5phm7vG1IAchKyZ9SNtoEhUipP06Eui7FflhP-ccKDt0qTLj5A3x2fgu24L8s3J1GFPBz7jQqYtqqLn9GDvikGa9gP5B-SQrSg-OfZPqyVgs1owDMTLreBqlhQJ4UsLwvmKP8Og2O9JIs4BjaZwmF3Dko5Zs-gyNNbmyndLv6XeSO6FCL1TI2QONbrb5N8aLh6b337yqLwkq7ensvThaRr396NEag4etmaKRPDRU3T0MaTisFp4OAueG1Y6UHNZxCgwgSoxbTTCSeKenisKqLBpPA49R06kTsVHE63vg-HbuTrmUwY_0coVLL0n6p5ztYe7MW719JSA7iJIWFrvTanpmy3LVkuHsLnuFkBYDWr4xuZODd1ydHKU3vuPaXbilTT90jA6s6ngZFMNarltT8JNmNAO87vyxwdLC2i_TfJONPI8xh3rIhDyxi8_LuGQguMQ9oGjaLjIeoiSRhsxIe3TCMM-C70AhKKv48yOWZIo9z3Fx1bE8uxv37A6TQW0NwBJacKK1V67Au1fiyvum8UwKSRaTH4oqgH6bLzAICdFA1GcDLWFyeVSzqB6dNjzE3pbHinjM9jkwmFEufh4AzRnWSOiiLrswK9KQnxiyLnuaQAUNYaFsChUXQ3x1RTiEdYGfWiOL3a4FXf1pnvddvqTXy3InN41kFvwqxalHxBCymgdT5tFXbBZ_OIq3j5Ei4a6ylW-hW5tOZrmTsnWxkhKZVSY8Tvt-htgBPELkJYR_1WaVTiYxUkIKuvWDVOVcNUNgZoSoYUUMnw80iOQuQwqybE0dv1et7yX7pHJANFoc04xS0d8KhIhU9o-uMx_jXiFMxJg2DlUqa5uy96TrbZpfn-zY_T1xF0aoZYA4IPBKj3UdyWwuAdJF8sxt8xoxZPUxPsV0QGWzVIRnG1NSa3z15RLQ7KzG1MsrI1DN-0olEasDuEGEQ6EFDJzB4nx0ZJzUj3WGslepzSVdsA2b8Wjotnm2zM3FGTayFljo_afum6_4yE60JRt4ekkZVAvOgz-EJOimykar-N08ZlZ_mpsBBKDNQ5tpZr5tlDlprnbXa3cjB3JGbCCRwdj2-5Ccl0L_84872rbhwd6XNT5HmsS_VFAaFLIr14Wt2b8ziRBI3bEVMDNLNbQj3UGjzhufjcNy3xWTtK6PpwLBvV8QSb8zw17cFr4F62gU9Z9b696Nsjc6VvPFb016siHS9SKEBswCaYDkz3t1XoDLrjTFFWNXh05ZM0Hry80pTt9Gi0gfqIjypiTsz8VWyz1xbZ6VvLwcV01togEaWsGl7pihXH38NF_ugh2CqRahXBDq8V9deXPtL2sGZRtAis6y8Kx5QybHyVq_8lk1U8dT9FbVrerolHT9Xxf4m3Urr3VbQPj4y6mfzpzB5vfAGY2dnvLAlv7yEC3kJ9g4YQrLuNaoWMzlRRb2QzPlrx4LrR9OHpH6vq9KidKJo-qKhO4BT52mXXGR_0i6EmvF_N4tRN4scWxJOfLyTQxbOsgnLuus4qjAeLRPpOy7NrnDemZi7zK5ncnSZv7j4fGs3Vzz_9ICyAXsztgX7NR48RInRfBAagrBmT163xFxF0lh9XZN0FgfNV3apfYFPm2HG5AGPsQXdYXRo-CnPGqSUfxM9WB5OUnzlgrNm8eCUjUXrP0Vk8bq9o0Ng1j-IB2HvMVTQ8N5Ynf3wrZrVcaieM-iJ2V-hQllUyf1MOugXD6y-9i1xXZkKX4zWGHAtHtLo6y1J-RV8zLaDYDvobQPXoB3H1IRvTRkYQ63zw9nqm3qehaRklqSO3F-ceu2WsI1VjWil8Xcg_KjzYmr_zdGWN6vOzT5KmD8TIBzzMB-W6euHVRYspjDoRlO9QNV004nRfZlzmtuPDvCJ8hgCpDrdrpWEGfZnWzI2bsDcYl8gBKQRWNaAI39sgK8pX7WmX9_lZwvixrpk1fGHm1CXBJRcUx8mD8G6Lb71cqZ43n-9euM4Fy1_BzdWYfH0h3CZRWmUdsaLAljYboaV0WkNS0djjzoQSilFsy6Ay9eznEcJJIY4JeNHulbuNn5C0XwRWl090j_eJe4xIiE7FvgNpKOw6qddHFD_98VP5yuDfeBfL4XO6b5Ybd8hodyHzYOJYW2GdLxDYAcDbv-GHXpglLRYxm2BP_8VN_vNYxAVqFujddEFBjR7506AHlakdbPAsc1MVhgsJrvnIThCdSXqaz6gYrN-cewN_PnqvNk1y-a21FZYGjluq5ucCRwiWxtFZGuUTPbk4bhFxHJLMPISpPdtrWBKhRAzzRjmdvc3AExamPG5LyV_1Z_0qNICOokaMwN8fmKjcHJXldA_eCzq0KbT9jI-OroDfP72ky56Up6ke2iRXWH1R5jnUy6S6e5W0NfsxcnWSeh5lKd-6FkD3T18vV6Kmzcsi_xE2Ddb_1itnMPDMNeqxCMjdlIzBRRaQREYfa0JILd4nhqgWZLfuFW_QjPhvuFRAmfBymB0ce8RfhnCJnXtywfUNRwyuyOWUlSORkh-aeKnB80Veoy3-pd1fw8JC5eG8pn-iZCjX-73Jk6hk9TjZajK6jcycjDqR6fUWHpkr9GDw6x4JY7x7QchlhDn6cv6ZL4MORvZT3syXhZLE865A86oQfr0A9fwEWY0pIzqKClDjvhdWN7U5Qj-CQY7rUW92Emo_t8o3nrzGDjEqdt6BrN-Dn9azEOedl9KyLYDqLoy2bmPvTXslm4yn-s\"}],\"role\":\"model\"},\"finish_reason\":\"STOP\",\"usage_metadata\":{\"candidates_token_count\":407,\"prompt_token_count\":158,\"prompt_tokens_details\":[{\"modality\":\"TEXT\",\"token_count\":158}],\"thoughts_token_count\":623,\"total_token_count\":1188}}",
+        "gen_ai.usage.input_tokens": 158,
+        "gen_ai.usage.output_tokens": 407,
+        "gen_ai.usage.experimental.reasoning_tokens": 623,
+        "gen_ai.response.finish_reasons": [
+            "stop"
+        ]
+    },
+    "events": [],
+    "links": [],
+    "resource": {
+        "attributes": {
+            "telemetry.sdk.language": "python",
+            "telemetry.sdk.name": "opentelemetry",
+            "telemetry.sdk.version": "1.41.1",
+            "service.name": "unknown_service"
+        },
+        "schema_url": ""
+    }
+}
+{
+    "name": "invoke_agent ingestion_agent",
+    "context": {
+        "trace_id": "0x4b98f87e3a072e68781b86b61e82b762",
+        "span_id": "0x7c00bc14425408cd",
+        "trace_state": "[]"
+    },
+    "kind": "SpanKind.INTERNAL",
+    "parent_id": "0xf1a1891588b0c8d8",
+    "start_time": "2026-07-01T09:32:27.902527Z",
+    "end_time": "2026-07-01T09:32:34.177620Z",
+    "status": {
+        "status_code": "UNSET"
+    },
+    "attributes": {
+        "gen_ai.operation.name": "invoke_agent",
+        "gen_ai.agent.description": "Handles ingesting new documents into the vault: validates file paths, chunks text, and stores embeddings. Use for requests about adding, scanning, or processing new files.",
+        "gen_ai.agent.name": "ingestion_agent",
+        "gen_ai.conversation.id": "e72e246a-8ebb-4921-ac81-c2f0ee28b5b7"
+    },
+    "events": [],
+    "links": [],
+    "resource": {
+        "attributes": {
+            "telemetry.sdk.language": "python",
+            "telemetry.sdk.name": "opentelemetry",
+            "telemetry.sdk.version": "1.41.1",
+            "service.name": "unknown_service"
+        },
+        "schema_url": ""
+    }
+}
+{
+    "name": "invocation",
+    "context": {
+        "trace_id": "0x4b98f87e3a072e68781b86b61e82b762",
+        "span_id": "0xf1a1891588b0c8d8",
+        "trace_state": "[]"
+    },
+    "kind": "SpanKind.INTERNAL",
+    "parent_id": "0xba9b377dbd232228",
+    "start_time": "2026-07-01T09:32:27.902197Z",
+    "end_time": "2026-07-01T09:32:34.178649Z",
+    "status": {
+        "status_code": "UNSET"
+    },
+    "attributes": {},
+    "events": [],
+    "links": [],
+    "resource": {
+        "attributes": {
+            "telemetry.sdk.language": "python",
+            "telemetry.sdk.name": "opentelemetry",
+            "telemetry.sdk.version": "1.41.1",
+            "service.name": "unknown_service"
+        },
+        "schema_url": ""
+    }
+}
+{
+    "name": "execute_tool ingestion_agent",
+    "context": {
+        "trace_id": "0x4b98f87e3a072e68781b86b61e82b762",
+        "span_id": "0xba9b377dbd232228",
+        "trace_state": "[]"
+    },
+    "kind": "SpanKind.INTERNAL",
+    "parent_id": "0x8f914d64b85a9b98",
+    "start_time": "2026-07-01T09:32:27.901882Z",
+    "end_time": "2026-07-01T09:32:34.179284Z",
+    "status": {
+        "status_code": "UNSET"
+    },
+    "attributes": {
+        "gen_ai.operation.name": "execute_tool",
+        "gen_ai.tool.description": "Handles ingesting new documents into the vault: validates file paths, chunks text, and stores embeddings. Use for requests about adding, scanning, or processing new files.",
+        "gen_ai.tool.name": "ingestion_agent",
+        "gen_ai.tool.type": "AgentTool",
+        "gcp.vertex.agent.llm_request": "{}",
+        "gcp.vertex.agent.llm_response": "{}",
+        "gcp.vertex.agent.tool_call_args": "{\"request\": \"how do I give you the documents to query\"}",
+        "gen_ai.tool.call.id": "oujbxwto",
+        "gcp.vertex.agent.event_id": "394df449-065c-46cd-906a-297378633c50",
+        "gcp.vertex.agent.tool_response": "{\"result\": \"To add documents to the Sovereign Vault so they can be queried, you can provide me with the **absolute file path** to the documents or folders on your system. \\n\\nHere is how you can do it:\\n\\n### 1. Provide an Absolute File Path\\nYou can give me the full, absolute path to a specific file you want to ingest. \\n* *Example (Mac/Linux):* `/Users/yourusername/workspace/project/document.pdf`\\n* *Example (Windows):* `C:\\\\Users\\\\yourusername\\\\workspace\\\\project\\\\document.txt`\\n\\n### 2. Provide a Folder Path (Bulk Ingestion)\\nIf you have multiple files, you can point me to an entire directory, and I will scan and process the eligible files within it.\\n* *Example:* `/Users/yourusername/workspace/project/docs_to_ingest/`\\n\\n---\\n\\n### Important Security & Formatting Guidelines:\\n* **Absolute Paths Only:** Please provide the full path rather than relative paths (like `./document.txt` or `../docs`).\\n* **Workspace Boundaries:** For security reasons, the files must reside within your designated workspace folder. I cannot access system directories (such as `/tmp`, `/etc`, or directories outside your allowed project environment).\\n* **File Types:** I can process standard text files, Markdown (`.md`), PDFs, and other common document formats.\\n\\n### What happens next?\\nOnce you provide a valid path:\\n1. I will **validate** the path to ensure it is secure and within your workspace.\\n2. I will **parse** the document(s).\\n3. I will **chunk** the text and generate secure vector embeddings.\\n4. I will **store** them in your Sovereign Vault. \\n\\nOnce ingested, the documents will be fully indexed and ready for you to query! **Please paste the absolute path to the file or folder you would like to ingest to get started.**\"}"
+    },
+    "events": [],
+    "links": [],
+    "resource": {
+        "attributes": {
+            "telemetry.sdk.language": "python",
+            "telemetry.sdk.name": "opentelemetry",
+            "telemetry.sdk.version": "1.41.1",
+            "service.name": "unknown_service"
+        },
+        "schema_url": ""
+    }
+}
+{
+    "name": "generate_content gemini-flash-latest",
+    "context": {
+        "trace_id": "0x4b98f87e3a072e68781b86b61e82b762",
+        "span_id": "0x8f914d64b85a9b98",
+        "trace_state": "[]"
+    },
+    "kind": "SpanKind.INTERNAL",
+    "parent_id": "0x400451a6be3ef558",
+    "start_time": "2026-07-01T09:32:25.297279Z",
+    "end_time": "2026-07-01T09:32:34.180854Z",
+    "status": {
+        "status_code": "UNSET"
+    },
+    "attributes": {
+        "gen_ai.system": "gemini",
+        "gen_ai.operation.name": "generate_content",
+        "gen_ai.request.model": "gemini-flash-latest",
+        "gen_ai.agent.name": "orchestrator_agent",
+        "gen_ai.conversation.id": "local_session",
+        "gcp.vertex.agent.event_id": "33086d81-b08f-4a00-a8d6-06cf5c257163",
+        "gcp.vertex.agent.invocation_id": "e-31703d57-0bd8-4a07-85ec-2b58ce82a42a",
+        "gen_ai.response.finish_reasons": [
+            "stop"
+        ],
+        "gen_ai.usage.input_tokens": 321,
+        "gen_ai.usage.output_tokens": 25
+    },
+    "events": [],
+    "links": [],
+    "resource": {
+        "attributes": {
+            "telemetry.sdk.language": "python",
+            "telemetry.sdk.name": "opentelemetry",
+            "telemetry.sdk.version": "1.41.1",
+            "service.name": "unknown_service"
+        },
+        "schema_url": ""
+    }
+}
+{
+    "name": "call_llm",
+    "context": {
+        "trace_id": "0x4b98f87e3a072e68781b86b61e82b762",
+        "span_id": "0x400451a6be3ef558",
+        "trace_state": "[]"
+    },
+    "kind": "SpanKind.INTERNAL",
+    "parent_id": "0x6396e7d40e9f419d",
+    "start_time": "2026-07-01T09:32:25.297097Z",
+    "end_time": "2026-07-01T09:32:34.180999Z",
+    "status": {
+        "status_code": "UNSET"
+    },
+    "attributes": {
+        "gen_ai.system": "gcp.vertex.agent",
+        "gen_ai.request.model": "gemini-flash-latest",
+        "gcp.vertex.agent.invocation_id": "e-31703d57-0bd8-4a07-85ec-2b58ce82a42a",
+        "gcp.vertex.agent.session_id": "local_session",
+        "gcp.vertex.agent.event_id": "33086d81-b08f-4a00-a8d6-06cf5c257163",
+        "gcp.vertex.agent.llm_request": "{\"model\": \"gemini-flash-latest\", \"config\": {\"http_options\": {\"headers\": {\"x-goog-api-client\": \"google-adk/2.1.0 gl-python/3.12.12\", \"user-agent\": \"google-adk/2.1.0 gl-python/3.12.12\"}}, \"system_instruction\": \"You are the Sovereign Vault Orchestrator. \\nYour job is to route user requests to the appropriate specialized agents using your tools.\\n- If the user query implies data ingestion or processing files, call the `ingestion_agent` tool.\\n- If the user is querying their data, call the `query_agent` tool.\\n- Rely on the `description` fields of your agent tools to route effectively.\\n\\nWhen the `query_agent` returns its response, it will contain bracketed placeholders for PII (e.g., [PERSON_1]).\\nYou must de-anonymize the response using the `token_map` stored in the session state before answering the user!\\n\\nYou are an agent. Your internal name is \\\"orchestrator_agent\\\". The description about you is \\\"The primary router and orchestrator for Sovereign Vault.\\\".\", \"tools\": [{\"function_declarations\": [{\"description\": \"Handles ingesting new documents into the vault: validates file paths, chunks text, and stores embeddings. Use for requests about adding, scanning, or processing new files.\", \"name\": \"ingestion_agent\", \"parameters_json_schema\": {\"type\": \"object\", \"properties\": {\"request\": {\"type\": \"string\"}}, \"required\": [\"request\"]}}, {\"description\": \"Queries the vault via semantic search and applies local PII redaction. Use for answering questions about the user's data.\", \"name\": \"query_agent\", \"parameters_json_schema\": {\"type\": \"object\", \"properties\": {\"request\": {\"type\": \"string\"}}, \"required\": [\"request\"]}}]}]}, \"contents\": [{\"parts\": [{\"text\": \"how do I give you the documents to query\"}], \"role\": \"user\"}]}",
+        "gcp.vertex.agent.llm_response": "{\"model_version\":\"gemini-3.5-flash\",\"content\":{\"parts\":[{\"function_call\":{\"id\":\"oujbxwto\",\"args\":{\"request\":\"how do I give you the documents to query\"},\"name\":\"ingestion_agent\"},\"thought_signature\":\"ErQICrEIAQw51sd7gvTPiRPqvLzTknfH-fJ7NuAO25dSvkVF6u08kZi7jMXTTkHIDt10oL4vCfb-I92WgeRTIAmvu3M-likbyjbVKMEFlNoHHBER7vdvCc3blj1JICrR1UJ99aAlk2f64Ey1uHkv96u7TAWuvn-ZXkYFX0o-W9ZfYBJ9HLQiKYhwx00HvoyQMpot5dG0IsD0NkYaUXEXaI7-Ebm7I_mHd8oo4X7Uts2x94nnOq7saL9Hab3sdkxHRnZXRy6BJIr0c5JbaEW1dSFMpw2vh64v6gAdDAowAhbN7XCHXhmas1DfWDIsWUz9o0uXq5vE79RXy6AFO5dkm0Iuf0adm-Y2NzTXQpnrzPtzo4jRKx-ZnpB6vyr1uvHlf8300YK0NETWQLmDvTD12scY_DyehkkHYCPpFQYhCi0yiR3sjsd6hOyiWnIX_kJaRBsM6g3W-pKCDedTE2mhqjQdhj_8iR9eh5yuHyLMGlO0E8bnQ4fbKy8p3Hz4NC5Mzuf_QF1S-Stnn3gyJT1xwxXUmznWA2HaOjfAakup0pUI9h0C_o02ku7VIkHv10cfFtJfh6CKA9mjTRWY45mluz-h7dSJWtQr2oohiBg4-4ROQMqGoQP5dNwsEGUPNyEuuy9SdYYDnQ7vESbmdw4CmUAK13wvSLefRXOTdwE4UXpVr-UW7GvffGzbyqWDz4YAyXxq4tq0OaYG5pqipjU1umzaXiTytLeWwJqPCkoBLsopyYlZCV256_xGClWDrBY55pYdzaPh83yb2VWxzeHxWOC5mMnSYThsfUGu4lKRaBqsUOJhgj5DJnbzweJ9WZWwlhbsM5djPOFeQcjS-mwf61Jv9nkXUlu-qXjKd8Vy3iZoiJk0IzvCzcvooncRagc4Lv218pw5NIMIUdd1kwqhE9i3d_otYshYTw1yufYdC3Je6rfoo4FXLPAjxvolcy5z8zUB6G2YOdCODCb_XM2XLC_c9M6XVdnESFJrKdX4Qzx5R6oWxFjR4XQOsYEMpr0dL4l630itkj1xxp4Pjs5xaOoq2HdkRssGc7-gMjXnZUTU2PIynHyyDSacggLhP9QSX4c9JN0dLEkdnQvek75oLMRHq4TSuDneNOqrE_Yr6uH9_703AO1vy_6qHKhK65WhOQA9cEDSVAmbn3Q8pivsB4zdJ6YYahbcX4TLyg9BmBEJf1mcA9u-W350lSU26yPVeWOU4c3bAZRwSsIsOpHPaKYkeLgVNEPVfGGbTdB7z8PIqRVxghca-WvtpUY58LSYZXeR5o8MlV2c4SBJZQC0rTU8DJZzcs-Bv6BXcZZT2Iyxu45nMOvzNSIxkkBX_WEAzhXSoMpnjRGGPr2_Gtz1UZ2He5zPSbfHaQIX21JDuKHJxZgYwCtrIj9M8aN_cT-iVW4LAU3QnILHrEn0tffmRGHEScC8YLs=\"}],\"role\":\"model\"},\"finish_reason\":\"STOP\",\"usage_metadata\":{\"candidates_token_count\":25,\"prompt_token_count\":321,\"prompt_tokens_details\":[{\"modality\":\"TEXT\",\"token_count\":321}],\"thoughts_token_count\":240,\"total_token_count\":586}}",
+        "gen_ai.usage.input_tokens": 321,
+        "gen_ai.usage.output_tokens": 25,
+        "gen_ai.usage.experimental.reasoning_tokens": 240,
+        "gen_ai.response.finish_reasons": [
+            "stop"
+        ]
+    },
+    "events": [],
+    "links": [],
+    "resource": {
+        "attributes": {
+            "telemetry.sdk.language": "python",
+            "telemetry.sdk.name": "opentelemetry",
+            "telemetry.sdk.version": "1.41.1",
+            "service.name": "unknown_service"
+        },
+        "schema_url": ""
+    }
+}
+
+Vault> To add documents to the Sovereign Vault so they can be queried, you can provide me with the **absolute file path** to the documents or folders on your system. 
+
+Here is how you can do it:
+
+### 1. Provide an Absolute File Path
+You can give me the full, absolute path to a specific file you want to ingest. 
+* *Example (Mac/Linux):* `/Users/yourusername/workspace/project/document.pdf`
+* *Example (Windows):* `C:\Users\yourusername\workspace\project\document.txt`
+
+### 2. Provide a Folder Path (Bulk Ingestion)
+If you have multiple files, you can point me to an entire directory, and I will scan and process the eligible files within it.
+* *Example:* `/Users/yourusername/workspace/project/docs_to_ingest/`
+
+---
+
+### Important Security & Formatting Guidelines:
+* **Absolute Paths Only:** Please provide the full path rather than relative paths (like `./document.txt` or `../docs`).
+* **Workspace Boundaries:** For security reasons, the files must reside within your designated workspace folder. I cannot access system directories (such as `/tmp`, `/etc`, or directories outside your allowed project environment).
+* **File Types:** I can process standard text files, Markdown (`.md`), PDFs, and other common document formats.
+
+### What happens next?
+Once you provide a valid path:
+1. I will **validate** the path to ensure it is secure and within your workspace.
+2. I will **parse** the document(s).
+3. I will **chunk** the text and generate secure vector embeddings.
+4. I will **store** them in your Sovereign Vault. 
+
+Once ingested, the documents will be fully indexed and ready for you to query! **Please paste the absolute path to the file or folder you would like to ingest to get started.**
+{
+    "name": "generate_content gemini-flash-latest",
+    "context": {
+        "trace_id": "0x4b98f87e3a072e68781b86b61e82b762",
+        "span_id": "0x659f6ee53af3dfc9",
+        "trace_state": "[]"
+    },
+    "kind": "SpanKind.INTERNAL",
+    "parent_id": "0x5a97a07f14661c66",
+    "start_time": "2026-07-01T09:32:34.182348Z",
+    "end_time": "2026-07-01T09:32:42.585787Z",
+    "status": {
+        "status_code": "UNSET"
+    },
+    "attributes": {
+        "gen_ai.system": "gemini",
+        "gen_ai.operation.name": "generate_content",
+        "gen_ai.request.model": "gemini-flash-latest",
+        "gen_ai.agent.name": "orchestrator_agent",
+        "gen_ai.conversation.id": "local_session",
+        "gcp.vertex.agent.event_id": "e1fdc9ee-0c07-42bd-ad46-45b5b080c0dc",
+        "gcp.vertex.agent.invocation_id": "e-31703d57-0bd8-4a07-85ec-2b58ce82a42a",
+        "gen_ai.response.finish_reasons": [
+            "stop"
+        ],
+        "gen_ai.usage.input_tokens": 1007,
+        "gen_ai.usage.output_tokens": 407
+    },
+    "events": [],
+    "links": [],
+    "resource": {
+        "attributes": {
+            "telemetry.sdk.language": "python",
+            "telemetry.sdk.name": "opentelemetry",
+            "telemetry.sdk.version": "1.41.1",
+            "service.name": "unknown_service"
+        },
+        "schema_url": ""
+    }
+}
+{
+    "name": "call_llm",
+    "context": {
+        "trace_id": "0x4b98f87e3a072e68781b86b61e82b762",
+        "span_id": "0x5a97a07f14661c66",
+        "trace_state": "[]"
+    },
+    "kind": "SpanKind.INTERNAL",
+    "parent_id": "0x6396e7d40e9f419d",
+    "start_time": "2026-07-01T09:32:34.182221Z",
+    "end_time": "2026-07-01T09:32:42.587781Z",
+    "status": {
+        "status_code": "UNSET"
+    },
+    "attributes": {
+        "gen_ai.system": "gcp.vertex.agent",
+        "gen_ai.request.model": "gemini-flash-latest",
+        "gcp.vertex.agent.invocation_id": "e-31703d57-0bd8-4a07-85ec-2b58ce82a42a",
+        "gcp.vertex.agent.session_id": "local_session",
+        "gcp.vertex.agent.event_id": "e1fdc9ee-0c07-42bd-ad46-45b5b080c0dc",
+        "gcp.vertex.agent.llm_request": "{\"model\": \"gemini-flash-latest\", \"config\": {\"http_options\": {\"headers\": {\"x-goog-api-client\": \"google-adk/2.1.0 gl-python/3.12.12\", \"user-agent\": \"google-adk/2.1.0 gl-python/3.12.12\"}}, \"system_instruction\": \"You are the Sovereign Vault Orchestrator. \\nYour job is to route user requests to the appropriate specialized agents using your tools.\\n- If the user query implies data ingestion or processing files, call the `ingestion_agent` tool.\\n- If the user is querying their data, call the `query_agent` tool.\\n- Rely on the `description` fields of your agent tools to route effectively.\\n\\nWhen the `query_agent` returns its response, it will contain bracketed placeholders for PII (e.g., [PERSON_1]).\\nYou must de-anonymize the response using the `token_map` stored in the session state before answering the user!\\n\\nYou are an agent. Your internal name is \\\"orchestrator_agent\\\". The description about you is \\\"The primary router and orchestrator for Sovereign Vault.\\\".\", \"tools\": [{\"function_declarations\": [{\"description\": \"Handles ingesting new documents into the vault: validates file paths, chunks text, and stores embeddings. Use for requests about adding, scanning, or processing new files.\", \"name\": \"ingestion_agent\", \"parameters_json_schema\": {\"type\": \"object\", \"properties\": {\"request\": {\"type\": \"string\"}}, \"required\": [\"request\"]}}, {\"description\": \"Queries the vault via semantic search and applies local PII redaction. Use for answering questions about the user's data.\", \"name\": \"query_agent\", \"parameters_json_schema\": {\"type\": \"object\", \"properties\": {\"request\": {\"type\": \"string\"}}, \"required\": [\"request\"]}}]}]}, \"contents\": [{\"parts\": [{\"text\": \"how do I give you the documents to query\"}], \"role\": \"user\"}, {\"parts\": [{\"function_call\": {\"id\": \"oujbxwto\", \"args\": {\"request\": \"how do I give you the documents to query\"}, \"name\": \"ingestion_agent\"}, \"thought_signature\": \"ErQICrEIAQw51sd7gvTPiRPqvLzTknfH-fJ7NuAO25dSvkVF6u08kZi7jMXTTkHIDt10oL4vCfb-I92WgeRTIAmvu3M-likbyjbVKMEFlNoHHBER7vdvCc3blj1JICrR1UJ99aAlk2f64Ey1uHkv96u7TAWuvn-ZXkYFX0o-W9ZfYBJ9HLQiKYhwx00HvoyQMpot5dG0IsD0NkYaUXEXaI7-Ebm7I_mHd8oo4X7Uts2x94nnOq7saL9Hab3sdkxHRnZXRy6BJIr0c5JbaEW1dSFMpw2vh64v6gAdDAowAhbN7XCHXhmas1DfWDIsWUz9o0uXq5vE79RXy6AFO5dkm0Iuf0adm-Y2NzTXQpnrzPtzo4jRKx-ZnpB6vyr1uvHlf8300YK0NETWQLmDvTD12scY_DyehkkHYCPpFQYhCi0yiR3sjsd6hOyiWnIX_kJaRBsM6g3W-pKCDedTE2mhqjQdhj_8iR9eh5yuHyLMGlO0E8bnQ4fbKy8p3Hz4NC5Mzuf_QF1S-Stnn3gyJT1xwxXUmznWA2HaOjfAakup0pUI9h0C_o02ku7VIkHv10cfFtJfh6CKA9mjTRWY45mluz-h7dSJWtQr2oohiBg4-4ROQMqGoQP5dNwsEGUPNyEuuy9SdYYDnQ7vESbmdw4CmUAK13wvSLefRXOTdwE4UXpVr-UW7GvffGzbyqWDz4YAyXxq4tq0OaYG5pqipjU1umzaXiTytLeWwJqPCkoBLsopyYlZCV256_xGClWDrBY55pYdzaPh83yb2VWxzeHxWOC5mMnSYThsfUGu4lKRaBqsUOJhgj5DJnbzweJ9WZWwlhbsM5djPOFeQcjS-mwf61Jv9nkXUlu-qXjKd8Vy3iZoiJk0IzvCzcvooncRagc4Lv218pw5NIMIUdd1kwqhE9i3d_otYshYTw1yufYdC3Je6rfoo4FXLPAjxvolcy5z8zUB6G2YOdCODCb_XM2XLC_c9M6XVdnESFJrKdX4Qzx5R6oWxFjR4XQOsYEMpr0dL4l630itkj1xxp4Pjs5xaOoq2HdkRssGc7-gMjXnZUTU2PIynHyyDSacggLhP9QSX4c9JN0dLEkdnQvek75oLMRHq4TSuDneNOqrE_Yr6uH9_703AO1vy_6qHKhK65WhOQA9cEDSVAmbn3Q8pivsB4zdJ6YYahbcX4TLyg9BmBEJf1mcA9u-W350lSU26yPVeWOU4c3bAZRwSsIsOpHPaKYkeLgVNEPVfGGbTdB7z8PIqRVxghca-WvtpUY58LSYZXeR5o8MlV2c4SBJZQC0rTU8DJZzcs-Bv6BXcZZT2Iyxu45nMOvzNSIxkkBX_WEAzhXSoMpnjRGGPr2_Gtz1UZ2He5zPSbfHaQIX21JDuKHJxZgYwCtrIj9M8aN_cT-iVW4LAU3QnILHrEn0tffmRGHEScC8YLs=\"}], \"role\": \"model\"}, {\"parts\": [{\"function_response\": {\"id\": \"oujbxwto\", \"name\": \"ingestion_agent\", \"response\": {\"result\": \"To add documents to the Sovereign Vault so they can be queried, you can provide me with the **absolute file path** to the documents or folders on your system. \\n\\nHere is how you can do it:\\n\\n### 1. Provide an Absolute File Path\\nYou can give me the full, absolute path to a specific file you want to ingest. \\n* *Example (Mac/Linux):* `/Users/yourusername/workspace/project/document.pdf`\\n* *Example (Windows):* `C:\\\\Users\\\\yourusername\\\\workspace\\\\project\\\\document.txt`\\n\\n### 2. Provide a Folder Path (Bulk Ingestion)\\nIf you have multiple files, you can point me to an entire directory, and I will scan and process the eligible files within it.\\n* *Example:* `/Users/yourusername/workspace/project/docs_to_ingest/`\\n\\n---\\n\\n### Important Security & Formatting Guidelines:\\n* **Absolute Paths Only:** Please provide the full path rather than relative paths (like `./document.txt` or `../docs`).\\n* **Workspace Boundaries:** For security reasons, the files must reside within your designated workspace folder. I cannot access system directories (such as `/tmp`, `/etc`, or directories outside your allowed project environment).\\n* **File Types:** I can process standard text files, Markdown (`.md`), PDFs, and other common document formats.\\n\\n### What happens next?\\nOnce you provide a valid path:\\n1. I will **validate** the path to ensure it is secure and within your workspace.\\n2. I will **parse** the document(s).\\n3. I will **chunk** the text and generate secure vector embeddings.\\n4. I will **store** them in your Sovereign Vault. \\n\\nOnce ingested, the documents will be fully indexed and ready for you to query! **Please paste the absolute path to the file or folder you would like to ingest to get started.**\"}}}], \"role\": \"user\"}]}",
+        "gcp.vertex.agent.llm_response": "{\"model_version\":\"gemini-3.5-flash\",\"content\":{\"parts\":[{\"text\":\"To add documents to the Sovereign Vault so they can be queried, you can provide me with the **absolute file path** to the documents or folders on your system. \\n\\nHere is how you can do it:\\n\\n### 1. Provide an Absolute File Path\\nYou can give me the full, absolute path to a specific file you want to ingest. \\n* *Example (Mac/Linux):* `/Users/yourusername/workspace/project/document.pdf`\\n* *Example (Windows):* `C:\\\\Users\\\\yourusername\\\\workspace\\\\project\\\\document.txt`\\n\\n### 2. Provide a Folder Path (Bulk Ingestion)\\nIf you have multiple files, you can point me to an entire directory, and I will scan and process the eligible files within it.\\n* *Example:* `/Users/yourusername/workspace/project/docs_to_ingest/`\\n\\n---\\n\\n### Important Security & Formatting Guidelines:\\n* **Absolute Paths Only:** Please provide the full path rather than relative paths (like `./document.txt` or `../docs`).\\n* **Workspace Boundaries:** For security reasons, the files must reside within your designated workspace folder. I cannot access system directories (such as `/tmp`, `/etc`, or directories outside your allowed project environment).\\n* **File Types:** I can process standard text files, Markdown (`.md`), PDFs, and other common document formats.\\n\\n### What happens next?\\nOnce you provide a valid path:\\n1. I will **validate** the path to ensure it is secure and within your workspace.\\n2. I will **parse** the document(s).\\n3. I will **chunk** the text and generate secure vector embeddings.\\n4. I will **store** them in your Sovereign Vault. \\n\\nOnce ingested, the documents will be fully indexed and ready for you to query! **Please paste the absolute path to the file or folder you would like to ingest to get started.**\",\"thought_signature\":\"EuUCCuICAQw51senU6QBq5GB5l96tstws-NSCMmFamygLgKwNCTZzCihWN1AZYGOyGsqdJOy4eJ-tpcNTySbGsnbKGQdbbPskWhdwV6RMd4nooM_5fZSJ4FMZzS8d4PrqAdcoxyoeTZhYNpViJdyxl1niA6NzPazh2iBCrXuXLUdRdosLfF_8asz3fkxuUjWSVO5r3qayPh8sRo4E4ykl6AbpyjqHiYZHqYeRnav1iJZF9XqwSSOAMGoN_RJVZsl3GBeRZE5dtPhc6HPVby2ckO8vaLa36M34Y3ac8bDBdnR1QZ2apyURHP6L6Dgc1gHlmVdiHmsffRqlPrrVD74kj3a0VuDdWii8UtpuufKa0L2gEIKz92OZkuXPTLOeQQypq9J3XERjuUPsupSO-LQNO8BbaQKxvNmkT0GMJSo_ryBtQvfaJWTyQ7U81BxzNjlWeoPB561xNr0ljpWf6QIp2DwZ9L0MPas\"}],\"role\":\"model\"},\"finish_reason\":\"STOP\",\"usage_metadata\":{\"candidates_token_count\":407,\"prompt_token_count\":1007,\"prompt_tokens_details\":[{\"modality\":\"TEXT\",\"token_count\":1007}],\"thoughts_token_count\":69,\"total_token_count\":1483}}",
+        "gen_ai.usage.input_tokens": 1007,
+        "gen_ai.usage.output_tokens": 407,
+        "gen_ai.usage.experimental.reasoning_tokens": 69,
+        "gen_ai.response.finish_reasons": [
+            "stop"
+        ]
+    },
+    "events": [],
+    "links": [],
+    "resource": {
+        "attributes": {
+            "telemetry.sdk.language": "python",
+            "telemetry.sdk.name": "opentelemetry",
+            "telemetry.sdk.version": "1.41.1",
+            "service.name": "unknown_service"
+        },
+        "schema_url": ""
+    }
+}
+{
+    "name": "invoke_agent orchestrator_agent",
+    "context": {
+        "trace_id": "0x4b98f87e3a072e68781b86b61e82b762",
+        "span_id": "0x6396e7d40e9f419d",
+        "trace_state": "[]"
+    },
+    "kind": "SpanKind.INTERNAL",
+    "parent_id": "0x5d45997c79667d8b",
+    "start_time": "2026-07-01T09:32:24.982705Z",
+    "end_time": "2026-07-01T09:32:42.590908Z",
+    "status": {
+        "status_code": "UNSET"
+    },
+    "attributes": {
+        "gen_ai.operation.name": "invoke_agent",
+        "gen_ai.agent.description": "The primary router and orchestrator for Sovereign Vault.",
+        "gen_ai.agent.name": "orchestrator_agent",
+        "gen_ai.conversation.id": "local_session"
+    },
+    "events": [],
+    "links": [],
+    "resource": {
+        "attributes": {
+            "telemetry.sdk.language": "python",
+            "telemetry.sdk.name": "opentelemetry",
+            "telemetry.sdk.version": "1.41.1",
+            "service.name": "unknown_service"
+        },
+        "schema_url": ""
+    }
+}
+{
+    "name": "invocation",
+    "context": {
+        "trace_id": "0x4b98f87e3a072e68781b86b61e82b762",
+        "span_id": "0x5d45997c79667d8b",
+        "trace_state": "[]"
+    },
+    "kind": "SpanKind.INTERNAL",
+    "parent_id": "0x8807bcac973dccc1",
+    "start_time": "2026-07-01T09:32:24.982043Z",
+    "end_time": "2026-07-01T09:32:42.591215Z",
+    "status": {
+        "status_code": "UNSET"
+    },
+    "attributes": {},
+    "events": [],
+    "links": [],
+    "resource": {
+        "attributes": {
+            "telemetry.sdk.language": "python",
+            "telemetry.sdk.name": "opentelemetry",
+            "telemetry.sdk.version": "1.41.1",
+            "service.name": "unknown_service"
+        },
+        "schema_url": ""
+    }
+}
+{
+    "name": "llm_inference",
+    "context": {
+        "trace_id": "0x4b98f87e3a072e68781b86b61e82b762",
+        "span_id": "0x8807bcac973dccc1",
+        "trace_state": "[]"
+    },
+    "kind": "SpanKind.INTERNAL",
+    "parent_id": null,
+    "start_time": "2026-07-01T09:32:24.981738Z",
+    "end_time": "2026-07-01T09:32:42.591324Z",
+    "status": {
+        "status_code": "UNSET"
+    },
+    "attributes": {
+        "query": "how do I give you the documents to query"
+    },
+    "events": [],
+    "links": [],
+    "resource": {
+        "attributes": {
+            "telemetry.sdk.language": "python",
+            "telemetry.sdk.name": "opentelemetry",
+            "telemetry.sdk.version": "1.41.1",
+            "service.name": "unknown_service"
+        },
+        "schema_url": ""
+    }
+}
+User> Traceback (most recent call last):
+  File "/Users/m.haadrehman/Documents/Security-Vault-Agent/secure-vault-agent/src/main.py", line 169, in <module>
+    asyncio.run(main())
+  File "/opt/homebrew/Cellar/python@3.12/3.12.12/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.12/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.12/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/Users/m.haadrehman/Documents/Security-Vault-Agent/secure-vault-agent/src/main.py", line 44, in main
+    user_input = input("User> ")
+                 ^^^^^^^^^^^^^^^
+EOFError: EOF when reading a line
