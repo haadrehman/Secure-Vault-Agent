@@ -1,5 +1,11 @@
 import asyncio
 import httpx
+import sys
+import os
+
+# Ensure the project root is in sys.path so 'app' can be imported
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from opentelemetry import trace
 from google.adk.runners import InMemoryRunner
 from google.adk.sessions import InMemorySessionService
@@ -19,8 +25,7 @@ app = App(
 )
 
 async def main():
-    session_service = InMemorySessionService()
-    runner = InMemoryRunner(app=app, session_service=session_service)
+    runner = InMemoryRunner(app=app)
     
     print("Welcome to the Sovereign Vault Agent CLI.")
     print("Type your query or 'exit' to quit.\n")
