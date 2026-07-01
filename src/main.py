@@ -53,8 +53,10 @@ async def main():
                         user_id=user_id,
                         session_id="local_session"
                     ):
-                        if event.text:
-                            print(f"\nVault> {event.text}")
+                        if getattr(event, "content", None) and getattr(event.content, "parts", None):
+                            text_parts = [p.text for p in event.content.parts if getattr(p, "text", None)]
+                            if text_parts:
+                                print(f"\nVault> {''.join(text_parts)}")
                             
                         # Check for HITL pause
                         if hasattr(event, "long_running_tool_ids") and event.long_running_tool_ids:
@@ -63,7 +65,11 @@ async def main():
                                 raw_preview = "Not provided"
                                 redacted_preview = "Not provided"
                                 
-                                tool_calls = getattr(event, "tool_calls", [])
+                                tool_calls = []
+                                if getattr(event, "content", None) and getattr(event.content, "parts", None):
+                                    for p in event.content.parts:
+                                        if getattr(p, "function_call", None):
+                                            tool_calls.append(p.function_call)
                                 for tc in tool_calls:
                                     # tc might be a FunctionCall object
                                     tc_id = getattr(tc, "id", getattr(tc, "function_call_id", None))
@@ -100,8 +106,10 @@ async def main():
                                             session_id="local_session",
                                             invocation_id=invoc_id
                                         ):
-                                            if resume_event.text:
-                                                print(f"Vault> {resume_event.text}")
+                                            if getattr(resume_event, "content", None) and getattr(resume_event.content, "parts", None):
+                                                r_text_parts = [p.text for p in resume_event.content.parts if getattr(p, "text", None)]
+                                                if r_text_parts:
+                                                    print(f"Vault> {''.join(r_text_parts)}")
                                     else:
                                         print("Approval denied. Query cancelled.")
                                         resume_response = FunctionResponse(
@@ -115,8 +123,10 @@ async def main():
                                             session_id="local_session",
                                             invocation_id=invoc_id
                                         ):
-                                            if resume_event.text:
-                                                print(f"Vault> {resume_event.text}")
+                                            if getattr(resume_event, "content", None) and getattr(resume_event.content, "parts", None):
+                                                r_text_parts = [p.text for p in resume_event.content.parts if getattr(p, "text", None)]
+                                                if r_text_parts:
+                                                    print(f"Vault> {''.join(r_text_parts)}")
                 
                 except (httpx.RequestError, TimeoutError, Exception) as e:
                     # Log OpenTelemetry span event at WARNING level
@@ -144,8 +154,10 @@ async def main():
                         user_id=user_id,
                         session_id="local_session"
                     ):
-                        if fb_event.text:
-                            print(f"\nVault (Fallback)> {fb_event.text}")
+                        if getattr(fb_event, "content", None) and getattr(fb_event.content, "parts", None):
+                            fb_text_parts = [p.text for p in fb_event.content.parts if getattr(p, "text", None)]
+                            if fb_text_parts:
+                                print(f"\nVault (Fallback)> {''.join(fb_text_parts)}")
                             
         except KeyboardInterrupt:
             print("\nExiting...")
